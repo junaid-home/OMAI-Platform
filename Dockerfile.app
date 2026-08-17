@@ -15,6 +15,10 @@ COPY ./ ./
 
 RUN bun install --frozen-lockfile
 
+# The SDK under services/ isn't a bun workspace member, so bun doesn't install
+# its dependencies.  Bootstrap it explicitly so Rollup can resolve its imports.
+RUN npm install --prefix services/omai-control-plane/sdk/typescript
+
 # Build the frontend (values passed from docker-compose via .env)
 ARG VITE_OMAI_API_BASE_URL
 ARG VITE_OMAI_API_TOKEN
