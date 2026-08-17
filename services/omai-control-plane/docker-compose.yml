@@ -36,8 +36,8 @@ services:
       OMAI_PREVIEW_RUNTIME_HOST: executor
       OMAI_PREVIEW_PREPARATION: auto
     ports:
-      - "127.0.0.1:${OMAI_API_PORT:-8787}:8787"
-      - "127.0.0.1:${OMAI_METRICS_PORT:-9091}:9091"
+      - "0.0.0.0:${OMAI_API_PORT:-8787}:8787"
+      - "0.0.0.0:${OMAI_METRICS_PORT:-9091}:9091"
     volumes:
       - ${OMAI_WORKSPACES_DIR:?set OMAI_WORKSPACES_DIR}:/workspaces
       - omai-model-cache:/var/lib/omai
@@ -113,7 +113,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail --silent --show-error --header 'Content-Type: application/json' --header 'Connect-Protocol-Version: 1' --header \"Authorization: Bearer $$OMAI_RUNTIME_TOKEN\" --data '{}' http://127.0.0.1:8790/uab.v1.ModelGatewayService/Health >/dev/null",
+          'curl --fail --silent --show-error --header ''Content-Type: application/json'' --header ''Connect-Protocol-Version: 1'' --header "Authorization: Bearer $$OMAI_RUNTIME_TOKEN" --data ''{}'' http://127.0.0.1:8790/uab.v1.ModelGatewayService/Health >/dev/null',
         ]
       interval: 3s
       timeout: 5s
@@ -153,7 +153,18 @@ services:
   redis:
     image: redis:8.2.8-alpine
     user: redis
-    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--appendfsync",
+        "everysec",
+        "--maxmemory",
+        "256mb",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s

@@ -96,7 +96,7 @@ export function createOMAIClient(options: OMAIClientOptions): OMAIClient {
   }
   const transport = createConnectTransport({
     baseUrl,
-    useBinaryFormat: options.useBinaryFormat ?? true,
+    useBinaryFormat: options.useBinaryFormat ?? false,
     defaultTimeoutMs: checkedTimeout(options.defaultTimeoutMs ?? 30_000),
     interceptors: [metadata, ...(options.interceptors ?? [])],
     fetch: credentialedFetch(options.fetch, options.credentials ?? "same-origin"),
