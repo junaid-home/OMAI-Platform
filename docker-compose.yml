@@ -12,6 +12,7 @@ services:
         VITE_OMAI_VOICE_GATEWAY_URL: ${VITE_OMAI_VOICE_GATEWAY_URL:-ws://localhost:8791}
     ports:
       - "127.0.0.1:${OMAI_FRONTEND_PORT:-4444}:80"
+      - "80:80"
     depends_on:
       omai:
         condition: service_healthy
