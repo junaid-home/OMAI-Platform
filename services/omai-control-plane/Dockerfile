@@ -61,6 +61,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       bash ca-certificates composer curl default-jdk-headless git gradle maven \
       php-cli python3 python3-pip python3-venv tini && \
+    rm -f /usr/local/bin/yarn* /usr/local/bin/corepack && \
     npm install --global bun@1.3.14 pnpm@10.28.1 yarn@1.22.22 && \
     rm -rf /root/.npm /var/lib/apt/lists/* && \
     groupadd --gid 65532 omai && \
