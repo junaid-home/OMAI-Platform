@@ -1,0 +1,11 @@
+/.env
+/bin/
+/audit-results/
+/coverage.out
+/gen/go/uab/
+/sdk/typescript/.cache/
+/sdk/typescript/dist/
+/sdk/typescript/node_modules/
+/sdk/typescript/src/gen/
+*.log
+*.test

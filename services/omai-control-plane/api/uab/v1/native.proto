@@ -1,0 +1,1108 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}
+message WorkspaceInfo {
+  string id = 1;
+  string node_id = 2;
+  string root = 3;
+  string repo_root = 4;
+  int64 created_unix_millis = 5;
+  int64 updated_unix_millis = 6;
+}
+message ResolveWorkspaceRequest {
+  string root = 1;
+}
+message ResolveWorkspaceResponse {
+  WorkspaceInfo workspace = 1;
+}
+message ListWorkspacesRequest {}
+message ListWorkspacesResponse {
+  repeated WorkspaceInfo workspaces = 1;
+}
+message FileEntry {
+  string name = 1;
+  string path = 2;
+  bool directory = 3;
+  int64 size = 4;
+  int64 modified_unix_millis = 5;
+}
+message ListFilesRequest {
+  string workspace_id = 1;
+  string path = 2;
+}
+message ListFilesResponse {
+  repeated FileEntry entries = 1;
+}
+enum FileChangeKind {
+  FILE_CHANGE_KIND_UNSPECIFIED = 0;
+  FILE_CHANGE_KIND_ADD = 1;
+  FILE_CHANGE_KIND_CHANGE = 2;
+  FILE_CHANGE_KIND_UNLINK = 3;
+  FILE_CHANGE_KIND_RESYNC = 4;
+}
+message WatchFilesRequest {
+  string workspace_id = 1;
+  repeated string paths = 2;
+}
+message WorkspaceFileChange {
+  uint64 sequence = 1;
+  string path = 2;
+  FileChangeKind kind = 3;
+}
+message ReadFileRequest {
+  string workspace_id = 1;
+  string path = 2;
+}
+message ReadFileResponse {
+  bytes data = 1;
+  string revision = 2;
+  int64 size = 3;
+  int64 modified_unix_millis = 4;
+}
+message WriteFileRequest {
+  string workspace_id = 1;
+  string path = 2;
+  bytes data = 3;
+  string expected_revision = 4;
+  bool require_revision_match = 5;
+}
+message WriteFileResponse {
+  string revision = 1;
+  int64 size = 2;
+  int64 modified_unix_millis = 3;
+}
+message MovePathRequest {
+  string workspace_id = 1;
+  string source_path = 2;
+  string destination_path = 3;
+  bool overwrite = 4;
+  string expected_revision = 5;
+  bool require_revision_match = 6;
+}
+message MovePathResponse {
+  string revision = 1;
+  int64 size = 2;
+  int64 modified_unix_millis = 3;
+}
+message DeletePathRequest {
+  string workspace_id = 1;
+  string path = 2;
+  bool recursive = 3;
+  string expected_revision = 4;
+  bool require_revision_match = 5;
+}
+message DeletePathResponse {}
+message ImportWorkspaceArchiveRequest {
+  string workspace_id = 1;
+  bytes data = 2;
+  bool strip_single_root = 3;
+}
+message ImportWorkspaceArchiveResponse {
+  int64 files = 1;
+  int64 directories = 2;
+  int64 uncompressed_bytes = 3;
+}
+message ExportWorkspaceArchiveRequest {
+  string workspace_id = 1;
+}
+message WorkspaceArchiveChunk {
+  bytes data = 1;
+}
+message CreateDirectoryRequest {
+  string workspace_id = 1;
+  string path = 2;
+}
+message CreateDirectoryResponse {}
+enum FileSearchKind {
+  FILE_SEARCH_KIND_UNSPECIFIED = 0;
+  FILE_SEARCH_KIND_FILE = 1;
+  FILE_SEARCH_KIND_DIRECTORY = 2;
+  FILE_SEARCH_KIND_ANY = 3;
+}
+message SearchFilesRequest {
+  string workspace_id = 1;
+  string query = 2;
+  int32 limit = 3;
+  FileSearchKind kind = 4;
+}
+message SearchFilesResponse {
+  repeated string paths = 1;
+}
+message SearchTextRequest {
+  string workspace_id = 1;
+  string query = 2;
+  int32 limit = 3;
+}
+message SearchMatch {
+  string path = 1;
+  int32 line = 2;
+  string text = 3;
+}
+message SearchTextResponse {
+  repeated SearchMatch matches = 1;
+}
+
+message GitFileStatus {
+  string path = 1;
+  string status = 2;
+}
+message GitInitRequest {
+  string workspace_id = 1;
+}
+message GitInitResponse {
+  GitStatus status = 1;
+}
+message GitStatus {
+  string branch = 1;
+  repeated GitFileStatus files = 2;
+  string default_branch = 3;
+}
+message GitStatusRequest {
+  string workspace_id = 1;
+}
+message GitStatusResponse {
+  GitStatus status = 1;
+}
+message GitDiffRequest {
+  string workspace_id = 1;
+  string path = 2;
+  bool staged = 3;
+}
+message GitDiffResponse {
+  string diff = 1;
+}
+message GitFileDiff {
+  string file = 1;
+  string patch = 2;
+  int32 additions = 3;
+  int32 deletions = 4;
+  string status = 5;
+}
+message GitDiffFilesRequest {
+  string workspace_id = 1;
+  string mode = 2;
+  string path = 3;
+  int32 context_lines = 4;
+}
+message GitDiffFilesResponse {
+  repeated GitFileDiff files = 1;
+}
+message GitStageRequest {
+  string workspace_id = 1;
+  repeated string paths = 2;
+  bool all = 3;
+}
+message GitStageResponse {
+  GitStatus status = 1;
+}
+message GitUnstageRequest {
+  string workspace_id = 1;
+  repeated string paths = 2;
+  bool all = 3;
+}
+message GitUnstageResponse {
+  GitStatus status = 1;
+}
+message GitCommitRequest {
+  string workspace_id = 1;
+  string message = 2;
+}
+message GitCommitResponse {
+  string commit = 1;
+}
+message WorktreeInfo {
+  string path = 1;
+  string branch = 2;
+  string head = 3;
+}
+message ListWorktreesRequest {
+  string workspace_id = 1;
+}
+message ListWorktreesResponse {
+  repeated WorktreeInfo worktrees = 1;
+}
+message CreateWorktreeRequest {
+  string workspace_id = 1;
+  string branch = 2;
+  string base = 3;
+}
+message CreateWorktreeResponse {
+  WorktreeInfo worktree = 1;
+}
+message RemoveWorktreeRequest {
+  string workspace_id = 1;
+  string path = 2;
+}
+message RemoveWorktreeResponse {}
+message MergeRequest {
+  string workspace_id = 1;
+  string branch = 2;
+}
+message MergeResponse {
+  string commit = 1;
+  bool fast_forward = 2;
+}
+
+message TerminalInfo {
+  string id = 1;
+  string workspace_id = 2;
+  string title = 3;
+  string cwd = 4;
+  string status = 5;
+  uint64 cursor = 6;
+  int32 exit_code = 7;
+  int64 started_unix_millis = 8;
+  int64 ended_unix_millis = 9;
+}
+message CreateTerminalRequest {
+  string workspace_id = 1;
+  string command = 2;
+  repeated string args = 3;
+  string cwd = 4;
+  repeated KeyValue env = 5;
+}
+message CreateTerminalResponse {
+  TerminalInfo terminal = 1;
+}
+message ListTerminalsRequest {
+  string workspace_id = 1;
+}
+message ListTerminalsResponse {
+  repeated TerminalInfo terminals = 1;
+}
+message WriteTerminalRequest {
+  string terminal_id = 1;
+  bytes data = 2;
+}
+message WriteTerminalResponse {}
+message ResizeTerminalRequest {
+  string terminal_id = 1;
+  uint32 cols = 2;
+  uint32 rows = 3;
+}
+message ResizeTerminalResponse {}
+message RemoveTerminalRequest {
+  string terminal_id = 1;
+}
+message RemoveTerminalResponse {}
+message WatchTerminalRequest {
+  string terminal_id = 1;
+  uint64 cursor = 2;
+}
+message TerminalChunk {
+  string terminal_id = 1;
+  uint64 cursor = 2;
+  bytes data = 3;
+  bool exited = 4;
+  int32 exit_code = 5;
+}
+message ShellInfo {
+  string path = 1;
+  string name = 2;
+  bool acceptable = 3;
+}
+message ListShellsRequest {}
+message ListShellsResponse {
+  repeated ShellInfo shells = 1;
+}
+
+message LSPServerInfo {
+  string id = 1;
+  string name = 2;
+  string command = 3;
+  bool available = 4;
+  string version = 5;
+}
+message ListLSPRequest {
+  string workspace_id = 1;
+}
+message ListLSPResponse {
+  repeated LSPServerInfo servers = 1;
+}
+message LSPInstanceInfo {
+  string id = 1;
+  string workspace_id = 2;
+  string server_id = 3;
+  string command = 4;
+  string status = 5;
+  uint64 cursor = 6;
+  int32 exit_code = 7;
+  int64 started_unix_millis = 8;
+  int64 ended_unix_millis = 9;
+}
+message StartLSPRequest {
+  string workspace_id = 1;
+  string server_id = 2;
+}
+message StartLSPResponse {
+  LSPInstanceInfo instance = 1;
+}
+message ListLSPInstancesRequest {
+  string workspace_id = 1;
+}
+message ListLSPInstancesResponse {
+  repeated LSPInstanceInfo instances = 1;
+}
+message WriteLSPRequest {
+  string instance_id = 1;
+  bytes data = 2;
+}
+message WriteLSPResponse {}
+message StopLSPRequest {
+  string instance_id = 1;
+}
+message StopLSPResponse {}
+message WatchLSPRequest {
+  string instance_id = 1;
+  uint64 cursor = 2;
+}
+message LSPChunk {
+  string instance_id = 1;
+  uint64 cursor = 2;
+  bytes data = 3;
+  bool exited = 4;
+  int32 exit_code = 5;
+}
+
+message MCPServerInfo {
+  string id = 1;
+  string workspace_id = 2;
+  string name = 3;
+  string transport = 4;
+  string command = 5;
+  repeated string args = 6;
+  string url = 7;
+  bool enabled = 8;
+}
+message ListMCPRequest {
+  string workspace_id = 1;
+}
+message ListMCPResponse {
+  repeated MCPServerInfo servers = 1;
+}
+message UpsertMCPRequest {
+  string workspace_id = 1;
+  MCPServerInfo server = 2;
+}
+message UpsertMCPResponse {
+  MCPServerInfo server = 1;
+}
+message DeleteMCPRequest {
+  string workspace_id = 1;
+  string server_id = 2;
+}
+message DeleteMCPResponse {
+  bool deleted = 1;
+}
+
+message RuntimeHealthRequest {
+  string runtime_id = 1;
+}
+message RuntimeHealthResponse {
+  string runtime_id = 1;
+  bool available = 2;
+  bool authenticated = 3;
+  string version = 4;
+  int64 latency_millis = 5;
+  string reason = 6;
+  int64 checked_unix_millis = 7;
+}
+message ListRuntimeHealthRequest {}
+message ListRuntimeHealthResponse {
+  repeated RuntimeHealthResponse runtimes = 1;
+}
+
+message ConversationMessageInfo {
+  string id = 1;
+  string session_id = 2;
+  string role = 3;
+  string kind = 4;
+  string text = 5;
+  bytes data_json = 6;
+  int64 created_unix_millis = 7;
+}
+message ListMessagesRequest {
+  string session_id = 1;
+}
+message ListMessagesResponse {
+  repeated ConversationMessageInfo messages = 1;
+}
+
+service WorkspaceService {
+  rpc ResolveWorkspace(ResolveWorkspaceRequest) returns (ResolveWorkspaceResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "resolve_workspace"
+      description: "Resolve an allowed workspace root"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "root"
+    };
+  }
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_workspaces"
+      description: "List tenant workspaces"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+    };
+  }
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_files"
+      description: "List a workspace directory"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc WatchFiles(WatchFilesRequest) returns (stream WorkspaceFileChange);
+  rpc CreateDirectory(CreateDirectoryRequest) returns (CreateDirectoryResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "create_directory"
+      description: "Create a contained workspace directory"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "workspace:write"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "read_file"
+      description: "Read a bounded workspace file"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "write_file"
+      description: "Atomically write a workspace file"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "workspace:write"
+      timeout_ms: 10000
+      idempotent: false
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc MovePath(MovePathRequest) returns (MovePathResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "move_workspace_path"
+      description: "Atomically move or rename a contained workspace path"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "workspace:write"
+      timeout_ms: 10000
+      idempotent: false
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "source_path"
+      required_fields: "destination_path"
+    };
+  }
+  rpc DeletePath(DeletePathRequest) returns (DeletePathResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "delete_workspace_path"
+      description: "Delete a contained workspace file or directory"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "workspace:write"
+      timeout_ms: 30000
+      idempotent: false
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc ImportArchive(ImportWorkspaceArchiveRequest) returns (ImportWorkspaceArchiveResponse) {
+    option (uab.v1.tool) = {
+      enabled: false
+      public_name: "import_workspace_archive"
+      description: "Safely extract a ZIP archive into an empty workspace"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "workspace:write"
+      timeout_ms: 120000
+      idempotent: false
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "data"
+    };
+  }
+  rpc ExportArchive(ExportWorkspaceArchiveRequest) returns (stream WorkspaceArchiveChunk) {
+    option (uab.v1.tool) = {
+      enabled: false
+      public_name: "export_workspace_archive"
+      description: "Stream a workspace as a ZIP archive"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 120000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc SearchFiles(SearchFilesRequest) returns (SearchFilesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "search_files"
+      description: "Search workspace paths"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "query"
+    };
+  }
+  rpc SearchText(SearchTextRequest) returns (SearchTextResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "search_text"
+      description: "Search bounded text inside workspace files"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "workspace:read"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.workspace"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "query"
+    };
+  }
+}
+
+service GitService {
+  rpc Init(GitInitRequest) returns (GitInitResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_init"
+      description: "Initialize a Git repository in the workspace root"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "git:write"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Status(GitStatusRequest) returns (GitStatusResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_status"
+      description: "Read repository status"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "git:read"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Diff(GitDiffRequest) returns (GitDiffResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_diff"
+      description: "Read repository diff"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "git:read"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc DiffFiles(GitDiffFilesRequest) returns (GitDiffFilesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_diff_files"
+      description: "Read bounded structured repository diffs for the OMAI review UI"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "git:read"
+      timeout_ms: 20000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "mode"
+    };
+  }
+  rpc Stage(GitStageRequest) returns (GitStageResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_stage"
+      description: "Stage selected or all repository changes"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "git:write"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Unstage(GitUnstageRequest) returns (GitUnstageResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_unstage"
+      description: "Remove selected or all changes from the Git index without modifying working files"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "git:write"
+      timeout_ms: 15000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Commit(GitCommitRequest) returns (GitCommitResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_commit"
+      description: "Commit already staged changes"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "git:write"
+      timeout_ms: 30000
+      idempotent: false
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "message"
+    };
+  }
+  rpc ListWorktrees(ListWorktreesRequest) returns (ListWorktreesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_git_worktrees"
+      description: "List repository worktrees"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "git:read"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc CreateWorktree(CreateWorktreeRequest) returns (CreateWorktreeResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "create_git_worktree"
+      description: "Create an isolated agent worktree"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "git:write"
+      timeout_ms: 30000
+      idempotent: false
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "branch"
+    };
+  }
+  rpc RemoveWorktree(RemoveWorktreeRequest) returns (RemoveWorktreeResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "remove_git_worktree"
+      description: "Remove a repository worktree"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "git:write"
+      timeout_ms: 30000
+      idempotent: true
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc Merge(MergeRequest) returns (MergeResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "git_merge"
+      description: "Merge a validated branch"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "git:write"
+      timeout_ms: 60000
+      idempotent: false
+      executor: "go.git"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "branch"
+    };
+  }
+}
+
+service TerminalService {
+  rpc ListShells(ListShellsRequest) returns (ListShellsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_terminal_shells"
+      description: "List shells available inside the Go workspace executor"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.process"
+      version: "v1"
+    };
+  }
+  rpc Create(CreateTerminalRequest) returns (CreateTerminalResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "create_terminal"
+      description: "Start a process inside a workspace sandbox"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "terminal:execute"
+      timeout_ms: 10000
+      idempotent: false
+      executor: "go.process"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc List(ListTerminalsRequest) returns (ListTerminalsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_terminals"
+      description: "List tenant terminals"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.process"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Write(WriteTerminalRequest) returns (WriteTerminalResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "write_terminal"
+      description: "Write bytes to a running terminal"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:execute"
+      timeout_ms: 5000
+      idempotent: false
+      executor: "go.process"
+      version: "v1"
+      required_fields: "terminal_id"
+    };
+  }
+  rpc Resize(ResizeTerminalRequest) returns (ResizeTerminalResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "resize_terminal"
+      description: "Update terminal dimensions"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:execute"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.process"
+      version: "v1"
+      required_fields: "terminal_id"
+    };
+  }
+  rpc Remove(RemoveTerminalRequest) returns (RemoveTerminalResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "remove_terminal"
+      description: "Stop and remove a terminal"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:execute"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.process"
+      version: "v1"
+      required_fields: "terminal_id"
+    };
+  }
+  rpc Watch(WatchTerminalRequest) returns (stream TerminalChunk) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "watch_terminal"
+      description: "Replay and stream terminal output"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "terminal:read"
+      timeout_ms: 0
+      idempotent: true
+      executor: "go.process"
+      version: "v1"
+      required_fields: "terminal_id"
+    };
+  }
+}
+
+service LSPService {
+  rpc List(ListLSPRequest) returns (ListLSPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_lsp_servers"
+      description: "List detected language servers"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Start(StartLSPRequest) returns (StartLSPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "start_lsp"
+      description: "Start a configured language server"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:execute"
+      timeout_ms: 10000
+      idempotent: false
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "server_id"
+    };
+  }
+  rpc ListInstances(ListLSPInstancesRequest) returns (ListLSPInstancesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_lsp_instances"
+      description: "List running language servers"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Write(WriteLSPRequest) returns (WriteLSPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "write_lsp"
+      description: "Write an LSP frame"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:execute"
+      timeout_ms: 5000
+      idempotent: false
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "instance_id"
+    };
+  }
+  rpc Stop(StopLSPRequest) returns (StopLSPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "stop_lsp"
+      description: "Stop a language server"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:execute"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "instance_id"
+    };
+  }
+  rpc Watch(WatchLSPRequest) returns (stream LSPChunk) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "watch_lsp"
+      description: "Replay and stream language server output"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "lsp:read"
+      timeout_ms: 0
+      idempotent: true
+      executor: "go.lsp"
+      version: "v1"
+      required_fields: "instance_id"
+    };
+  }
+}
+
+service MCPService {
+  rpc List(ListMCPRequest) returns (ListMCPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_mcp_servers"
+      description: "List workspace MCP servers"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "mcp:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.mcp"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Upsert(UpsertMCPRequest) returns (UpsertMCPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "upsert_mcp_server"
+      description: "Create or update a workspace MCP configuration"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "mcp:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.mcp"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "server"
+    };
+  }
+  rpc Delete(DeleteMCPRequest) returns (DeleteMCPResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "delete_mcp_server"
+      description: "Delete a workspace MCP configuration"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_RISKY
+      permissions: "mcp:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.mcp"
+      version: "v1"
+      required_fields: "workspace_id"
+      required_fields: "server_id"
+    };
+  }
+}
+
+service RuntimeService {
+  rpc Health(RuntimeHealthRequest) returns (RuntimeHealthResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_runtime_health"
+      description: "Check one configured runtime"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "runtime:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.runtime-registry"
+      version: "v1"
+      required_fields: "runtime_id"
+    };
+  }
+  rpc ListHealth(ListRuntimeHealthRequest) returns (ListRuntimeHealthResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_runtime_health"
+      description: "Check all configured runtimes"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "runtime:read"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.runtime-registry"
+      version: "v1"
+    };
+  }
+}
+
+service ConversationService {
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_conversation_messages"
+      description: "Restore normalized conversation history"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.conversation"
+      version: "v1"
+      required_fields: "session_id"
+    };
+  }
+}

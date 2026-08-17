@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "omai-platform",
+  "version": "1.0.0",
+  "description": "Go-owned agent workspace platform with a SolidJS portal",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "scripts": {
+    "dev": "bun run dev:web",
+    "dev:backend": "cd services/omai-control-plane && go run ./cmd/omai-server",
+    "dev:web": "bun --cwd packages/app dev",
+    "build": "bun --cwd packages/app build",
+    "typecheck": "bun --cwd packages/platform-utils typecheck && bun --cwd packages/ui typecheck && bun --cwd packages/session-ui typecheck && bun --cwd packages/omai-sdk-web typecheck && bun --cwd packages/app typecheck",
+    "test": "bun --cwd packages/platform-utils typecheck && bun --cwd packages/ui test && bun --cwd packages/session-ui test && bun --cwd packages/sdk/js test && bun --cwd packages/app test:unit",
+    "verify:go": "cd services/omai-control-plane && make verify",
+    "verify:sdk": "npm --prefix services/omai-control-plane/sdk/typescript run verify",
+    "verify:portal": "bun run typecheck && bun run test && bun run build",
+    "audit": "./RUN_LIVE_AUDIT.sh"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/app",
+      "packages/omai-sdk-web",
+      "packages/platform-utils",
+      "packages/sdk/js",
+      "packages/session-ui",
+      "packages/ui"
+    ],
+    "catalog": {
+      "@connectrpc/connect": "2.1.2",
+      "@corvu/drawer": "0.2.4",
+      "@kobalte/core": "0.13.11",
+      "@pierre/diffs": "1.2.10",
+      "@playwright/test": "1.59.1",
+      "@sentry/solid": "10.36.0",
+      "@sentry/vite-plugin": "4.6.0",
+      "@shikijs/stream": "4.2.0",
+      "@solid-primitives/storage": "4.3.3",
+      "@solidjs/meta": "0.29.4",
+      "@solidjs/router": "0.15.4",
+      "@tailwindcss/vite": "4.1.11",
+      "@tanstack/solid-virtual": "3.13.32",
+      "@tsconfig/bun": "1.0.9",
+      "@tsconfig/node22": "22.0.2",
+      "@types/bun": "1.3.13",
+      "@types/cross-spawn": "6.0.6",
+      "@types/luxon": "3.7.1",
+      "@types/node": "24.12.2",
+      "@typescript/native-preview": "7.0.0-dev.20251207.1",
+      "cross-spawn": "7.0.6",
+      "diff": "8.0.2",
+      "effect": "4.0.0-beta.83",
+      "fuzzysort": "3.1.0",
+      "luxon": "3.6.1",
+      "marked": "17.0.6",
+      "marked-shiki": "1.2.1",
+      "remeda": "2.26.0",
+      "remend": "1.3.0",
+      "shiki": "4.2.0",
+      "solid-js": "1.9.10",
+      "solid-list": "0.3.0",
+      "tailwindcss": "4.1.11",
+      "typescript": "5.8.2",
+      "vite": "7.1.4",
+      "vite-plugin-solid": "2.11.10"
+    }
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "1.72.0",
+    "@bufbuild/protoc-gen-es": "2.13.0",
+    "@playwright/test": "catalog:",
+    "@tsconfig/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "prettier": "3.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omai/platform"
+  },
+  "license": "MIT",
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  },
+  "trustedDependencies": [
+    "esbuild",
+    "protobufjs",
+    "tree-sitter",
+    "web-tree-sitter"
+  ],
+  "patchedDependencies": {
+    "@pierre/trees@1.0.0-beta.4": "patches/@pierre%2Ftrees@1.0.0-beta.4.patch",
+    "@tanstack/virtual-core@3.17.3": "patches/@tanstack%2Fvirtual-core@3.17.3.patch",
+    "effect@4.0.0-beta.83": "patches/effect@4.0.0-beta.83.patch",
+    "solid-js@1.9.10": "patches/solid-js@1.9.10.patch"
+  }
+}

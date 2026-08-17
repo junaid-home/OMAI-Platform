@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+!.env.sample
+node_modules
+**/node_modules
+**/.cache
+**/audit-results
+**/coverage
+**/dist
+**/test-results
+e2e-results
+.DS_Store

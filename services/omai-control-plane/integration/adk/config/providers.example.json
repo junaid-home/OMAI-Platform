@@ -1,0 +1,64 @@
+{
+  "schema_version": "1",
+  "max_cached_models": 256,
+  "default": {
+    "provider_id": "google",
+    "model_id": "gemini-flash-latest"
+  },
+  "providers": [
+    {
+      "id": "google",
+      "name": "Google AI",
+      "driver": "gemini",
+      "api_key_env": "GOOGLE_API_KEY",
+      "default_model": "gemini-flash-latest",
+      "model_prefixes": ["gemini-"],
+      "request_timeout": "10m",
+      "enabled": true
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "driver": "openai-responses",
+      "api_key_env": "OPENAI_API_KEY",
+      "base_url": "https://api.openai.com/v1",
+      "default_model": "gpt-5-mini",
+      "model_prefixes": ["gpt-", "o1", "o3", "o4"],
+      "request_timeout": "10m",
+      "enabled": true
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "driver": "openai-responses",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "base_url": "https://openrouter.ai/api/v1",
+      "default_model": "anthropic/claude-sonnet-4.5",
+      "allow_all_models": true,
+      "request_timeout": "10m",
+      "enabled": true
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "driver": "openai-chat-completions",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "base_url": "https://api.deepseek.com",
+      "default_model": "deepseek-v4-flash",
+      "model_prefixes": ["deepseek-"],
+      "request_timeout": "10m",
+      "enabled": true
+    },
+    {
+      "id": "local",
+      "name": "Local OpenAI Responses",
+      "driver": "openai-responses",
+      "base_url": "http://127.0.0.1:11434/v1",
+      "default_model": "qwen3-coder",
+      "allow_all_models": true,
+      "allow_anonymous": true,
+      "request_timeout": "30m",
+      "enabled": false
+    }
+  ]
+}

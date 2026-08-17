@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_READ = 1;
+  RISK_LEVEL_WRITE = 2;
+  RISK_LEVEL_DANGEROUS = 3;
+}
+
+enum ConfirmationPolicy {
+  CONFIRMATION_POLICY_UNSPECIFIED = 0;
+  CONFIRMATION_POLICY_NEVER = 1;
+  CONFIRMATION_POLICY_RISKY = 2;
+  CONFIRMATION_POLICY_ALWAYS = 3;
+}
+
+message ToolOptions {
+  bool enabled = 1;
+  string public_name = 2;
+  string description = 3;
+  RiskLevel risk = 4;
+  ConfirmationPolicy confirmation = 5;
+  repeated string permissions = 6;
+  uint32 timeout_ms = 7;
+  bool idempotent = 8;
+  string executor = 9;
+  string version = 10;
+  repeated string required_fields = 11;
+  repeated string modalities = 12;
+}
+
+extend google.protobuf.MethodOptions {
+  ToolOptions tool = 51001;
+}

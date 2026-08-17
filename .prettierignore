@@ -1,0 +1,6 @@
+bun.lock
+packages/sdk/js/src/gen/
+packages/sdk/js/src/v2/gen/
+services/omai-control-plane/configs/models.dev.snapshot.json
+services/omai-control-plane/gen/
+services/omai-control-plane/sdk/typescript/src/gen/

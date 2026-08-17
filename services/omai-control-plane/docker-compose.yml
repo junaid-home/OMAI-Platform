@@ -1,0 +1,172 @@
+services:
+  omai:
+    build:
+      context: .
+      target: server
+    environment:
+      OMAI_ENV: development
+      OMAI_ADDR: 0.0.0.0:8787
+      OMAI_METRICS_ADDR: 0.0.0.0:9091
+      OMAI_WORKSPACE_ROOTS: /workspaces
+      OMAI_DEV_TOKEN: ${OMAI_DEV_TOKEN:?set OMAI_DEV_TOKEN}
+      OMAI_SERVICE_TOKEN: ${OMAI_SERVICE_TOKEN:?set OMAI_SERVICE_TOKEN}
+      OMAI_REDIS_ADDR: redis:6379
+      OMAI_ALLOWED_ORIGINS: ${OMAI_ALLOWED_ORIGINS:-http://localhost:4444}
+      OMAI_ENABLE_REFLECTION: "true"
+      OMAI_ENABLE_DEMO_RUNTIME: ${OMAI_ENABLE_DEMO_RUNTIME:-false}
+      OMAI_ALLOW_INSECURE: "true"
+      OMAI_RUNTIMES_FILE: /etc/omai/runtimes.json
+      OMAI_MODEL_CATALOG_FILE: /etc/omai/models.json
+      # Loads the vendored full snapshot first, then refreshes from models.dev.
+      # Remove this variable when deployment policy forbids catalog egress.
+      OMAI_MODEL_SYNC_FILE: /etc/omai/model-sync.json
+      OMAI_ADK_RUNTIME_TOKEN: ${OMAI_ADK_RUNTIME_TOKEN:?set OMAI_ADK_RUNTIME_TOKEN}
+      OMAI_EXECUTOR_URL: http://executor:8792
+      OMAI_EXECUTOR_CONTROL_ROOT: /workspaces
+      OMAI_EXECUTOR_TOKEN: ${OMAI_EXECUTOR_TOKEN:?set OMAI_EXECUTOR_TOKEN}
+      OMAI_EXECUTOR_TRANSPORT: grpc
+      OMAI_MAX_ARCHIVE_BYTES: ${OMAI_MAX_ARCHIVE_BYTES:-209715200}
+      # The executor owns the process; the control plane owns readiness and the
+      # public HTTP/WebSocket capability route.
+      OMAI_PREVIEW_PUBLIC_BASE_URL: ${OMAI_PREVIEW_PUBLIC_BASE_URL:-http://localhost:8787}
+      # An explicitly empty value selects the path-capability publisher, which
+      # is useful for private-network E2E and local deployments without DNS.
+      OMAI_PREVIEW_PUBLIC_URL_TEMPLATE: ${OMAI_PREVIEW_PUBLIC_URL_TEMPLATE-http://{id}.preview.localhost:8787/}
+      OMAI_PREVIEW_BIND_HOST: 0.0.0.0
+      OMAI_PREVIEW_RUNTIME_HOST: executor
+      OMAI_PREVIEW_PREPARATION: auto
+    ports:
+      - "127.0.0.1:${OMAI_API_PORT:-8787}:8787"
+      - "127.0.0.1:${OMAI_METRICS_PORT:-9091}:9091"
+    volumes:
+      - ${OMAI_WORKSPACES_DIR:?set OMAI_WORKSPACES_DIR}:/workspaces
+      - omai-model-cache:/var/lib/omai
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8787/readyz"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+    stop_grace_period: 20s
+    depends_on:
+      adk:
+        condition: service_healthy
+      executor:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  executor:
+    build:
+      context: .
+      target: executor
+    environment:
+      OMAI_EXECUTOR_ENV: development
+      OMAI_EXECUTOR_ADDR: 0.0.0.0:8792
+      OMAI_EXECUTOR_WORKSPACE_ROOT: /workspace
+      OMAI_EXECUTOR_TOKEN: ${OMAI_EXECUTOR_TOKEN:?set OMAI_EXECUTOR_TOKEN}
+      OMAI_EXECUTOR_ALLOW_INSECURE: "true"
+      OMAI_EXECUTOR_ENABLE_REFLECTION: "true"
+      OMAI_EXECUTOR_MAX_ARCHIVE_BYTES: ${OMAI_EXECUTOR_MAX_ARCHIVE_BYTES:-209715200}
+    volumes:
+      - ${OMAI_WORKSPACES_DIR:?set OMAI_WORKSPACES_DIR}:/workspace
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8792/readyz"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+
+  adk:
+    build:
+      context: .
+      target: adk
+    environment:
+      OMAI_ADK_ADDR: 0.0.0.0:8790
+      OMAI_ADK_ENV: development
+      OMAI_ADK_ALLOW_INSECURE: "true"
+      OMAI_RUNTIME_TOKEN: ${OMAI_ADK_RUNTIME_TOKEN:?set OMAI_ADK_RUNTIME_TOKEN}
+      OMAI_ADK_PROVIDERS_FILE: /etc/omai/providers.json
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:?set GOOGLE_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent --show-error --header 'Content-Type: application/json' --header 'Connect-Protocol-Version: 1' --header \"Authorization: Bearer $$OMAI_RUNTIME_TOKEN\" --data '{}' http://127.0.0.1:8790/uab.v1.ModelGatewayService/Health >/dev/null",
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 5s
+
+  voice:
+    build:
+      context: .
+      target: voice
+    environment:
+      OMAI_VOICE_ADDR: 0.0.0.0:8791
+      OMAI_VOICE_METRICS_ADDR: 0.0.0.0:9092
+      OMAI_CONTROL_URL: http://omai:8787
+      OMAI_SERVICE_TOKEN: ${OMAI_SERVICE_TOKEN:?set OMAI_SERVICE_TOKEN}
+      OMAI_ALLOWED_ORIGINS: ${OMAI_ALLOWED_ORIGINS:-http://localhost:4444}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:?set GOOGLE_API_KEY}
+      OMAI_VOICE_MODEL: ${OMAI_VOICE_MODEL:-gemini-3.1-flash-live-preview}
+    ports:
+      - "127.0.0.1:${OMAI_VOICE_PORT:-8791}:8791"
+      - "127.0.0.1:${OMAI_VOICE_METRICS_PORT:-9092}:9092"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8791/readyz"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+    depends_on:
+      omai:
+        condition: service_healthy
+
+  redis:
+    image: redis:8.2.8-alpine
+    user: redis
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+    read_only: true
+    volumes:
+      - omai-redis-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  omai-model-cache:
+  omai-redis-data:

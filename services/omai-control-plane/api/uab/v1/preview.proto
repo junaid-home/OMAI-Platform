@@ -1,0 +1,201 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// PreviewService exposes the Go-owned project analysis and development-server
+// lifecycle. Clients select a workspace; they never submit shell commands.
+service PreviewService {
+  rpc Analyze(PreviewAnalyzeRequest) returns (PreviewAnalyzeResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "analyze_workspace_preview"
+      description: "Analyze a workspace and return its deterministic preview runtime plan"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:read"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "root"
+    };
+  }
+  rpc Start(PreviewStartRequest) returns (PreviewStartResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "start_workspace_preview"
+      description: "Start or reuse a Go-managed workspace preview"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:write"
+      timeout_ms: 360000
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "root"
+    };
+  }
+  rpc Restart(PreviewRestartRequest) returns (PreviewRestartResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "restart_workspace_preview"
+      description: "Reanalyze code and atomically replace an active workspace preview"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:write"
+      timeout_ms: 360000
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "root"
+    };
+  }
+  rpc Get(PreviewGetRequest) returns (PreviewGetResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_workspace_preview"
+      description: "Read and renew the lease of a Go-managed workspace preview"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc Stop(PreviewStopRequest) returns (PreviewStopResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "stop_workspace_preview"
+      description: "Stop every process belonging to a workspace preview"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:write"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc WatchLogs(PreviewWatchLogsRequest) returns (stream PreviewLogChunk) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "watch_workspace_preview_logs"
+      description: "Replay and stream bounded preview process logs"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "preview:read"
+      timeout_ms: 0
+      idempotent: true
+      executor: "go.preview"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+}
+
+message PreviewAnalyzeRequest {
+  string root = 1;
+}
+message PreviewAnalyzeResponse {
+  PreviewRuntimePlan plan = 1;
+}
+message PreviewStartRequest {
+  string root = 1;
+}
+message PreviewStartResponse {
+  PreviewInstance preview = 1;
+}
+message PreviewRestartRequest {
+  string root = 1;
+}
+message PreviewRestartResponse {
+  PreviewInstance preview = 1;
+}
+message PreviewGetRequest {
+  string workspace_id = 1;
+}
+message PreviewGetResponse {
+  PreviewInstance preview = 1;
+}
+message PreviewStopRequest {
+  string workspace_id = 1;
+}
+message PreviewStopResponse {
+  bool stopped = 1;
+}
+message PreviewWatchLogsRequest {
+  string workspace_id = 1;
+  uint64 cursor = 2;
+}
+message PreviewLogChunk {
+  string process_id = 1;
+  uint64 cursor = 2;
+  bytes data = 3;
+  bool exited = 4;
+  int32 exit_code = 5;
+}
+
+message PreviewRuntimeCommand {
+  string command = 1;
+  repeated string args = 2;
+  map<string, string> env = 3;
+}
+message PreviewDetectionEvidence {
+  string detector = 1;
+  string path = 2;
+  string reason = 3;
+  int32 score = 4;
+}
+message PreviewRuntimeService {
+  string id = 1;
+  string name = 2;
+  string working_dir = 3;
+  string runtime = 4;
+  string runtime_version = 5;
+  string framework = 6;
+  string package_manager = 7;
+  PreviewRuntimeCommand install = 8;
+  PreviewRuntimeCommand run = 9;
+  bool preview = 10;
+  repeated uint32 expected_ports = 11;
+  repeated string depends_on = 12;
+}
+message PreviewRuntimePlan {
+  int32 version = 1;
+  string workspace_id = 2;
+  string fingerprint = 3;
+  string source = 4;
+  string primary = 5;
+  repeated PreviewRuntimeService services = 6;
+  repeated PreviewDetectionEvidence evidence = 7;
+  int64 analyzed_unix_millis = 8;
+}
+message PreviewProcess {
+  string service_id = 1;
+  string process_id = 2;
+  uint32 port = 3;
+  string status = 4;
+}
+message PreviewInstance {
+  string id = 1;
+  string workspace_id = 2;
+  string process_id = 3;
+  string service_id = 4;
+  string framework = 5;
+  string plan_fingerprint = 6;
+  uint32 port = 7;
+  string status = 8;
+  string public_url = 9;
+  repeated PreviewProcess processes = 10;
+  int64 started_unix_millis = 11;
+  int64 updated_unix_millis = 12;
+  string last_error = 13;
+}

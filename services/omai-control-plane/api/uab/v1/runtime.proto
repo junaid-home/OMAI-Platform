@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// AgentRuntimeService is the stable backend-to-harness port. Go ADK or another
+// harness implements this contract in a small adapter; the OMAI core never
+// imports a vendor SDK.
+service AgentRuntimeService {
+  rpc RuntimeHealth(AgentRuntimeHealthRequest) returns (AgentRuntimeHealthResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "runtime_health"
+      description: "Check a runtime adapter"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "runtime:invoke"
+      timeout_ms: 3000
+      idempotent: true
+      executor: "agent.runtime"
+      version: "v1"
+    };
+  }
+  rpc Run(RuntimePrompt) returns (stream RuntimeEvent) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "run_agent_runtime"
+      description: "Run one normalized agent turn"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "runtime:invoke"
+      timeout_ms: 0
+      idempotent: false
+      executor: "agent.runtime"
+      version: "v1"
+      required_fields: "session_id"
+      required_fields: "text"
+    };
+  }
+  rpc Cancel(RuntimeCancelRequest) returns (RuntimeCancelResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "cancel_agent_runtime"
+      description: "Cancel an active runtime turn"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "runtime:invoke"
+      timeout_ms: 3000
+      idempotent: true
+      executor: "agent.runtime"
+      version: "v1"
+      required_fields: "session_id"
+    };
+  }
+}
+
+message AgentRuntimeHealthRequest {}
+message AgentRuntimeHealthResponse {
+  bool available = 1;
+  bool authenticated = 2;
+  string version = 3;
+  string reason = 4;
+}
+message RuntimePrompt {
+  string session_id = 1;
+  string external_session_id = 2;
+  string workspace_id = 3;
+  string root = 4;
+  string text = 5;
+  string title = 6;
+  string model_id = 7;
+  string actor_id = 8;
+  string tenant_id = 9;
+  string provider_id = 10;
+  // Catalog-derived hints for harness context management. The model gateway
+  // remains authoritative and applies its own generation bounds.
+  int64 model_context_tokens = 11;
+  int64 model_output_tokens = 12;
+}
+enum RuntimeEventKind {
+  RUNTIME_EVENT_KIND_UNSPECIFIED = 0;
+  RUNTIME_EVENT_KIND_AGENT_MESSAGE_CHUNK = 1;
+  RUNTIME_EVENT_KIND_AGENT_THOUGHT_CHUNK = 2;
+  RUNTIME_EVENT_KIND_TOOL_CALL = 3;
+  RUNTIME_EVENT_KIND_TOOL_CALL_UPDATE = 4;
+  RUNTIME_EVENT_KIND_STATUS = 5;
+  RUNTIME_EVENT_KIND_ERROR = 6;
+  RUNTIME_EVENT_KIND_DONE = 7;
+}
+message RuntimeEvent {
+  RuntimeEventKind kind = 1;
+  string message_id = 2;
+  string text = 3;
+  string tool_call_id = 4;
+  string tool_name = 5;
+  bytes arguments_json = 6;
+  bytes output_json = 7;
+  string status = 8;
+  int64 unix_millis = 9;
+}
+message RuntimeCancelRequest {
+  string session_id = 1;
+}
+message RuntimeCancelResponse {
+  bool cancelled = 1;
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1",
+  "source_url": "https://models.dev/api.json",
+  "source_file": "/etc/omai/models.dev.snapshot.json",
+  "output_file": "/var/lib/omai/models.generated.json",
+  "include_unrouted": true,
+  "refresh_interval": "1h",
+  "request_timeout": "15s",
+  "max_bytes": 67108864,
+  "routes": [
+    {
+      "source_provider_id": "google",
+      "provider_id": "google",
+      "provider_name": "Google AI",
+      "runtime_id": "go-adk",
+      "additional_runtime_ids": ["opencode"],
+      "default_model": "gemini-flash-latest",
+      "model_prefixes": ["gemini-"],
+      "enabled": true
+    },
+    {
+      "source_provider_id": "openai",
+      "provider_id": "openai",
+      "provider_name": "OpenAI",
+      "runtime_id": "go-adk",
+      "additional_runtime_ids": ["opencode"],
+      "default_model": "gpt-5-mini",
+      "model_prefixes": ["gpt-", "o1", "o3", "o4"],
+      "enabled": true
+    },
+    {
+      "source_provider_id": "openrouter",
+      "provider_id": "openrouter",
+      "provider_name": "OpenRouter",
+      "runtime_id": "go-adk",
+      "additional_runtime_ids": ["opencode"],
+      "default_model": "anthropic/claude-sonnet-4.5",
+      "allow_all_models": true,
+      "enabled": true
+    }
+  ]
+}

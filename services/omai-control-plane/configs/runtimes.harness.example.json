@@ -1,0 +1,37 @@
+{
+  "runtimes": [
+    {
+      "id": "opencode",
+      "runtime": "opencode",
+      "label": "OpenCode via OMAI Go Harness",
+      "version": "pinned-release-or-image-digest",
+      "node_id": "workspace-executor",
+      "endpoint": "https://workspace-executor.internal:8792",
+      "token_env": "OMAI_EXECUTOR_TOKEN",
+      "transport": "grpc",
+      "enabled": true,
+      "capabilities": ["chat", "streaming", "cancel", "model-gateway", "workspace-tools"],
+      "models": [],
+      "ca_cert": "/run/secrets/executor-ca.crt",
+      "client_cert": "/run/secrets/control-plane.crt",
+      "client_key": "/run/secrets/control-plane.key",
+      "tls_server_name": "workspace-executor.internal"
+    },
+    {
+      "id": "go-adk",
+      "runtime": "go-adk",
+      "label": "OMAI Go ADK",
+      "version": "2.2.0",
+      "endpoint": "https://adk.internal:8790",
+      "token_env": "OMAI_ADK_RUNTIME_TOKEN",
+      "transport": "grpc",
+      "enabled": true,
+      "capabilities": ["chat", "streaming", "cancel", "model-routing"],
+      "models": [],
+      "ca_cert": "/run/secrets/adk-ca.crt",
+      "client_cert": "/run/secrets/control-plane-adk.crt",
+      "client_key": "/run/secrets/control-plane-adk.key",
+      "tls_server_name": "adk.internal"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package uab.v1;
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// ModelGatewayService is the internal model port for every OMAI agent harness.
+// Provider credentials and vendor SDKs stay behind the Go ADK runtime.
+service ModelGatewayService {
+  rpc Health(ModelGatewayHealthRequest) returns (ModelGatewayHealthResponse);
+  rpc Generate(ModelGenerateRequest) returns (stream ModelGenerateEvent);
+}
+
+message ModelGatewayHealthRequest {}
+message ModelGatewayHealthResponse {
+  bool available = 1;
+  bool authenticated = 2;
+  string version = 3;
+  string reason = 4;
+}
+
+message ModelGenerateRequest {
+  // Required trace scope supplied by the trusted calling harness.
+  string tenant_id = 1;
+  string actor_id = 2;
+  string session_id = 3;
+  string provider_id = 4;
+  string model_id = 5;
+  repeated ModelContent contents = 6;
+  repeated ModelTool tools = 7;
+  ModelGenerationConfig config = 8;
+}
+
+message ModelContent {
+  // The portable roles are "user" and "model".
+  string role = 1;
+  repeated ModelPart parts = 2;
+}
+
+message ModelPart {
+  string text = 1;
+  bytes inline_data = 2;
+  string mime_type = 3;
+  ModelFunctionCall function_call = 4;
+  ModelFunctionResult function_result = 5;
+  bool thought = 6;
+  bytes thought_signature = 7;
+}
+
+message ModelFunctionCall {
+  string id = 1;
+  string name = 2;
+  bytes arguments_json = 3;
+}
+
+message ModelFunctionResult {
+  string id = 1;
+  string name = 2;
+  bytes result_json = 3;
+}
+
+message ModelTool {
+  string name = 1;
+  string description = 2;
+  bytes input_schema_json = 3;
+  bytes output_schema_json = 4;
+}
+
+message ModelGenerationConfig {
+  optional float temperature = 1;
+  optional float top_p = 2;
+  int32 max_output_tokens = 3;
+  string system_instruction = 4;
+  repeated string stop_sequences = 5;
+}
+
+enum ModelGenerateEventKind {
+  MODEL_GENERATE_EVENT_KIND_UNSPECIFIED = 0;
+  MODEL_GENERATE_EVENT_KIND_CONTENT = 1;
+  MODEL_GENERATE_EVENT_KIND_ERROR = 2;
+  MODEL_GENERATE_EVENT_KIND_DONE = 3;
+}
+
+message ModelUsage {
+  int32 input_tokens = 1;
+  int32 output_tokens = 2;
+  int32 total_tokens = 3;
+  int32 cached_input_tokens = 4;
+  int32 thought_tokens = 5;
+}
+
+message ModelGenerateEvent {
+  ModelGenerateEventKind kind = 1;
+  ModelContent content = 2;
+  ModelUsage usage = 3;
+  string model_version = 4;
+  string finish_reason = 5;
+  bool partial = 6;
+  bool turn_complete = 7;
+  string error_code = 8;
+  string error_message = 9;
+  int64 unix_millis = 10;
+  string provider_id = 11;
+  string model_id = 12;
+}

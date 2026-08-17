@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "providers": [
+    {
+      "id": "google",
+      "name": "Google AI",
+      "model_count": 2,
+      "connected": true,
+      "runtime_id": "go-adk"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "model_count": 2,
+      "connected": true,
+      "runtime_id": "go-adk"
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "model_count": 3,
+      "connected": true,
+      "runtime_id": "go-adk"
+    }
+  ],
+  "models": [
+    {
+      "id": "gemini-flash-latest",
+      "name": "Gemini Flash",
+      "provider_id": "google",
+      "runtime_id": "go-adk",
+      "ready": true,
+      "limits": { "context": 1000000 }
+    },
+    {
+      "id": "gemini-3.1-pro-preview",
+      "name": "Gemini 3.1 Pro Preview",
+      "provider_id": "google",
+      "runtime_id": "go-adk",
+      "ready": true,
+      "limits": { "context": 1000000 }
+    },
+    {
+      "id": "gpt-5-mini",
+      "name": "GPT-5 mini",
+      "provider_id": "openai",
+      "runtime_id": "go-adk",
+      "ready": true
+    },
+    {
+      "id": "gpt-5.2-codex",
+      "name": "GPT-5.2 Codex",
+      "provider_id": "openai",
+      "runtime_id": "go-adk",
+      "ready": true
+    },
+    {
+      "id": "anthropic/claude-sonnet-4.5",
+      "name": "Claude Sonnet 4.5",
+      "provider_id": "openrouter",
+      "runtime_id": "go-adk",
+      "ready": true
+    },
+    {
+      "id": "deepseek/deepseek-chat",
+      "name": "DeepSeek Chat",
+      "provider_id": "openrouter",
+      "runtime_id": "go-adk",
+      "ready": true
+    },
+    {
+      "id": "qwen/qwen3-coder",
+      "name": "Qwen 3 Coder",
+      "provider_id": "openrouter",
+      "runtime_id": "go-adk",
+      "ready": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@omai/platform-utils",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./array": "./src/array.ts",
+    "./binary": "./src/binary.ts",
+    "./encode": "./src/encode.ts",
+    "./path": "./src/path.ts",
+    "./retry": "./src/retry.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "@typescript/native-preview": "catalog:"
+  }
+}

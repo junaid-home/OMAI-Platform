@@ -1,0 +1,620 @@
+syntax = "proto3";
+
+package omai.platform.v1;
+
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/omai/platform/v1;platformv1";
+
+service ProjectService {
+  rpc ResolveProject(ResolveProjectRequest) returns (ResolveProjectResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "resolve_project"
+      description: "Resolve or register an OMAI project from an allowed workspace root"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "project:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.project"
+      version: "v1"
+      required_fields: "root"
+      modalities: "text"
+    };
+  }
+  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_projects"
+      description: "List tenant projects"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "project:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.project"
+      version: "v1"
+      modalities: "text"
+    };
+  }
+  rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_project"
+      description: "Read an OMAI project"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "project:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.project"
+      version: "v1"
+      required_fields: "project_id"
+      modalities: "text"
+    };
+  }
+  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "update_project"
+      description: "Update OMAI project presentation metadata"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "project:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.project"
+      version: "v1"
+      required_fields: "project_id"
+      modalities: "text"
+    };
+  }
+}
+
+service SessionService {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "create_session"
+      description: "Create or adopt an OMAI session"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "project_id"
+      required_fields: "runtime_id"
+      required_fields: "external_session_id"
+      modalities: "text"
+    };
+  }
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_sessions"
+      description: "List project sessions"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "project_id"
+      modalities: "text"
+    };
+  }
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_session"
+      description: "Read an OMAI session"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+  rpc UpdateSession(UpdateSessionRequest) returns (UpdateSessionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "update_session"
+      description: "Update session title or archive state"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:write"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+  rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "delete_session"
+      description: "Delete an idle OMAI session and its local history"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "session:delete"
+      timeout_ms: 10000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+  rpc SubmitText(SubmitTextRequest) returns (SubmitTextResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "submit_session_text"
+      description: "Submit a text turn through the selected OMAI runtime and model route"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "agent:prompt"
+      timeout_ms: 10000
+      idempotent: false
+      executor: "go.orchestrator"
+      version: "v1"
+      required_fields: "session_id"
+      required_fields: "provider_id"
+      required_fields: "model_id"
+      required_fields: "text"
+      modalities: "text"
+    };
+  }
+  rpc CancelSession(CancelSessionRequest) returns (CancelSessionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "cancel_session"
+      description: "Cancel the active OMAI session turn"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "agent:cancel"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.orchestrator"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_session_messages"
+      description: "List normalized session messages"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.session"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+  rpc SubscribeSessionEvents(SubscribeSessionEventsRequest) returns (stream SessionEvent) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "subscribe_typed_session_events"
+      description: "Replay and stream typed OMAI session events"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "session:read"
+      timeout_ms: 0
+      idempotent: true
+      executor: "go.event-store"
+      version: "v1"
+      required_fields: "session_id"
+      modalities: "text"
+    };
+  }
+}
+
+service PermissionService {
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_pending_permissions"
+      description: "List pending OMAI permission requests for a project or session"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "permission:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.permission"
+      version: "v1"
+      modalities: "text"
+    };
+  }
+  rpc RespondPermission(RespondPermissionRequest) returns (RespondPermissionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "respond_permission"
+      description: "Resolve a pending OMAI permission request exactly once"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "permission:respond"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.permission"
+      version: "v1"
+      required_fields: "session_id"
+      required_fields: "permission_id"
+      required_fields: "decision"
+      modalities: "text"
+    };
+  }
+}
+
+service QuestionService {
+  rpc ListQuestions(ListQuestionsRequest) returns (ListQuestionsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_pending_questions"
+      description: "List pending OMAI agent questions for a project or session"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "question:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.question"
+      version: "v1"
+      modalities: "text"
+    };
+  }
+  rpc ReplyQuestion(ReplyQuestionRequest) returns (ReplyQuestionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "reply_question"
+      description: "Answer a pending OMAI agent question exactly once"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "question:respond"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.question"
+      version: "v1"
+      required_fields: "session_id"
+      required_fields: "question_id"
+      required_fields: "answers"
+      modalities: "text"
+    };
+  }
+  rpc RejectQuestion(RejectQuestionRequest) returns (RejectQuestionResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "reject_question"
+      description: "Reject a pending OMAI agent question exactly once"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "question:respond"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.question"
+      version: "v1"
+      required_fields: "session_id"
+      required_fields: "question_id"
+      modalities: "text"
+    };
+  }
+}
+
+message Project {
+  string id = 1;
+  string workspace_id = 2;
+  string root = 3;
+  string repo_root = 4;
+  string name = 5;
+  string icon_color = 6;
+  int64 created_unix_millis = 7;
+  int64 updated_unix_millis = 8;
+  string icon_override = 9;
+  string startup_command = 10;
+}
+
+message ResolveProjectRequest {
+  string root = 1;
+  string name = 2;
+}
+message ResolveProjectResponse {
+  Project project = 1;
+}
+message ListProjectsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListProjectsResponse {
+  repeated Project projects = 1;
+  string next_page_token = 2;
+}
+message GetProjectRequest {
+  string project_id = 1;
+}
+message GetProjectResponse {
+  Project project = 1;
+}
+message UpdateProjectRequest {
+  string project_id = 1;
+  optional string name = 2;
+  optional string icon_color = 3;
+  optional string icon_override = 4;
+  optional string startup_command = 5;
+}
+message UpdateProjectResponse {
+  Project project = 1;
+}
+
+message Session {
+  string id = 1;
+  string external_session_id = 2;
+  string project_id = 3;
+  string workspace_id = 4;
+  string runtime_id = 5;
+  string provider_id = 6;
+  string model_id = 7;
+  string title = 8;
+  bool archived = 9;
+  int64 created_unix_millis = 10;
+  int64 updated_unix_millis = 11;
+}
+
+message CreateSessionRequest {
+  string project_id = 1;
+  string runtime_id = 2;
+  string external_session_id = 3;
+  string title = 4;
+}
+message CreateSessionResponse {
+  Session session = 1;
+  bool created = 2;
+}
+message ListSessionsRequest {
+  string project_id = 1;
+  bool include_archived = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+message ListSessionsResponse {
+  repeated Session sessions = 1;
+  string next_page_token = 2;
+}
+message GetSessionRequest {
+  string session_id = 1;
+}
+message GetSessionResponse {
+  Session session = 1;
+}
+message UpdateSessionRequest {
+  string session_id = 1;
+  optional string title = 2;
+  optional bool archived = 3;
+}
+message UpdateSessionResponse {
+  Session session = 1;
+}
+message DeleteSessionRequest {
+  string session_id = 1;
+}
+message DeleteSessionResponse {
+  bool deleted = 1;
+}
+message SubmitTextRequest {
+  string session_id = 1;
+  string provider_id = 2;
+  string model_id = 3;
+  string text = 4;
+}
+message SubmitTextResponse {
+  Session session = 1;
+}
+message CancelSessionRequest {
+  string session_id = 1;
+}
+message CancelSessionResponse {
+  bool cancelled = 1;
+}
+
+message Message {
+  string id = 1;
+  string session_id = 2;
+  string role = 3;
+  string kind = 4;
+  string text = 5;
+  bytes data_json = 6;
+  int64 created_unix_millis = 7;
+}
+message ListMessagesRequest {
+  string session_id = 1;
+}
+message ListMessagesResponse {
+  repeated Message messages = 1;
+}
+
+message InteractionToolReference {
+  string message_id = 1;
+  string call_id = 2;
+}
+
+enum PermissionDecision {
+  PERMISSION_DECISION_UNSPECIFIED = 0;
+  PERMISSION_DECISION_ONCE = 1;
+  PERMISSION_DECISION_ALWAYS = 2;
+  PERMISSION_DECISION_REJECT = 3;
+}
+
+message Permission {
+  string id = 1;
+  string session_id = 2;
+  string project_id = 3;
+  string permission = 4;
+  repeated string patterns = 5;
+  bytes metadata_json = 6;
+  repeated string always = 7;
+  InteractionToolReference tool = 8;
+  PermissionDecision decision = 9;
+  int64 created_unix_millis = 10;
+  int64 resolved_unix_millis = 11;
+}
+
+message ListPermissionsRequest {
+  string project_id = 1;
+  string session_id = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+message ListPermissionsResponse {
+  repeated Permission permissions = 1;
+  string next_page_token = 2;
+}
+message RespondPermissionRequest {
+  string session_id = 1;
+  string permission_id = 2;
+  PermissionDecision decision = 3;
+}
+message RespondPermissionResponse {
+  Permission permission = 1;
+}
+
+message QuestionOption {
+  string label = 1;
+  string description = 2;
+}
+message Question {
+  string question = 1;
+  string header = 2;
+  repeated QuestionOption options = 3;
+  bool multiple = 4;
+  bool custom = 5;
+}
+message QuestionAnswer {
+  repeated string values = 1;
+}
+message QuestionRequestResource {
+  string id = 1;
+  string session_id = 2;
+  string project_id = 3;
+  repeated Question questions = 4;
+  InteractionToolReference tool = 5;
+  repeated QuestionAnswer answers = 6;
+  bool rejected = 7;
+  int64 created_unix_millis = 8;
+  int64 resolved_unix_millis = 9;
+}
+message ListQuestionsRequest {
+  string project_id = 1;
+  string session_id = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+message ListQuestionsResponse {
+  repeated QuestionRequestResource questions = 1;
+  string next_page_token = 2;
+}
+message ReplyQuestionRequest {
+  string session_id = 1;
+  string question_id = 2;
+  repeated QuestionAnswer answers = 3;
+}
+message ReplyQuestionResponse {
+  QuestionRequestResource question = 1;
+}
+message RejectQuestionRequest {
+  string session_id = 1;
+  string question_id = 2;
+}
+message RejectQuestionResponse {
+  QuestionRequestResource question = 1;
+}
+
+enum SessionState {
+  SESSION_STATE_UNSPECIFIED = 0;
+  SESSION_STATE_RUNNING = 1;
+  SESSION_STATE_IDLE = 2;
+}
+enum MessageChannel {
+  MESSAGE_CHANNEL_UNSPECIFIED = 0;
+  MESSAGE_CHANNEL_ANSWER = 1;
+  MESSAGE_CHANNEL_REASONING = 2;
+}
+message SessionStateChanged {
+  SessionState state = 1;
+}
+message MessageDelta {
+  string message_id = 1;
+  MessageChannel channel = 2;
+  string delta = 3;
+}
+message ToolCallStarted {
+  string tool_call_id = 1;
+  string message_id = 2;
+  string tool_name = 3;
+  string status = 4;
+  bytes arguments_json = 5;
+}
+message ToolCallUpdated {
+  string tool_call_id = 1;
+  string status = 2;
+  bytes output_json = 3;
+}
+message SessionFailed {
+  string message = 1;
+}
+message PermissionRequested {
+  Permission permission = 1;
+}
+message PermissionResolved {
+  string session_id = 1;
+  string permission_id = 2;
+  PermissionDecision decision = 3;
+}
+message QuestionRequested {
+  QuestionRequestResource question = 1;
+}
+message QuestionResolved {
+  string session_id = 1;
+  string question_id = 2;
+  repeated QuestionAnswer answers = 3;
+  bool rejected = 4;
+}
+message UnknownEvent {
+  string wire_type = 1;
+  bytes payload_json = 2;
+}
+message SessionEvent {
+  uint64 sequence = 1;
+  int64 occurred_at_unix_millis = 2;
+  string session_id = 3;
+  string workspace_id = 4;
+  string runtime_id = 5;
+  string external_session_id = 6;
+  oneof payload {
+    SessionStateChanged state_changed = 10;
+    MessageDelta message_delta = 11;
+    ToolCallStarted tool_call_started = 12;
+    ToolCallUpdated tool_call_updated = 13;
+    SessionFailed failed = 14;
+    UnknownEvent unknown = 15;
+    PermissionRequested permission_requested = 16;
+    PermissionResolved permission_resolved = 17;
+    QuestionRequested question_requested = 18;
+    QuestionResolved question_resolved = 19;
+  }
+}
+message SubscribeSessionEventsRequest {
+  string session_id = 1;
+  uint64 after_sequence = 2;
+}

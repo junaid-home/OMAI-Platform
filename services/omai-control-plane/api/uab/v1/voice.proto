@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "google/protobuf/struct.proto";
+import "uab/v1/annotations.proto";
+import "uab/v1/reflection.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// VoiceControlService is the trusted boundary between browser-facing voice
+// gateways and the OMAI control plane. Audio never traverses this service.
+service VoiceControlService {
+  rpc MintTicket(MintVoiceTicketRequest) returns (MintVoiceTicketResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "mint_voice_ticket"
+      description: "Create a short-lived one-time voice admission ticket"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "voice:connect"
+      timeout_ms: 3000
+      idempotent: false
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc RedeemTicket(RedeemVoiceTicketRequest) returns (RedeemVoiceTicketResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "redeem_voice_ticket"
+      description: "Atomically redeem a voice ticket and acquire a distributed session lease"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "voice:gateway"
+      timeout_ms: 3000
+      idempotent: false
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "ticket"
+      required_fields: "session_id"
+    };
+  }
+  rpc Heartbeat(VoiceLeaseRequest) returns (VoiceLeaseResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "heartbeat_voice_lease"
+      description: "Refresh an active voice session lease"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "voice:gateway"
+      timeout_ms: 3000
+      idempotent: true
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "lease_token"
+    };
+  }
+  rpc Release(VoiceLeaseRequest) returns (VoiceLeaseResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "release_voice_lease"
+      description: "Release a voice session lease"
+      risk: RISK_LEVEL_WRITE
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "voice:gateway"
+      timeout_ms: 3000
+      idempotent: true
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "lease_token"
+    };
+  }
+  rpc ListVoiceTools(ListVoiceToolsRequest) returns (ListVoiceToolsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_voice_tools"
+      description: "Return allowed unary OMAI tools for one active voice lease"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "voice:gateway"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "lease_token"
+    };
+  }
+  rpc Dispatch(VoiceDispatchRequest) returns (VoiceDispatchResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "dispatch_voice_tool"
+      description: "Validate, authorize, confirm, and execute an OMAI tool for a voice lease"
+      risk: RISK_LEVEL_DANGEROUS
+      confirmation: CONFIRMATION_POLICY_ALWAYS
+      permissions: "voice:gateway"
+      timeout_ms: 65000
+      idempotent: false
+      executor: "go.voice-control"
+      version: "v1"
+      required_fields: "lease_token"
+      required_fields: "request_id"
+      required_fields: "tool"
+    };
+  }
+}
+
+message MintVoiceTicketRequest {
+  string workspace_id = 1;
+  string locale = 2;
+  string voice = 3;
+}
+message MintVoiceTicketResponse {
+  string ticket = 1;
+  int64 expires_unix_millis = 2;
+  string websocket_path = 3;
+}
+message RedeemVoiceTicketRequest {
+  string ticket = 1;
+  string session_id = 2;
+}
+message VoiceSessionClaims {
+  string tenant_id = 1;
+  string actor_id = 2;
+  string workspace_id = 3;
+  repeated string permissions = 4;
+  string locale = 5;
+  string voice = 6;
+}
+message RedeemVoiceTicketResponse {
+  string lease_token = 1;
+  int64 lease_expires_unix_millis = 2;
+  VoiceSessionClaims claims = 3;
+}
+message VoiceLeaseRequest {
+  string lease_token = 1;
+}
+message VoiceLeaseResponse {
+  bool active = 1;
+  int64 lease_expires_unix_millis = 2;
+}
+message ListVoiceToolsRequest {
+  string lease_token = 1;
+}
+message ListVoiceToolsResponse {
+  repeated ReflectedTool tools = 1;
+  string registry_etag = 2;
+}
+message VoiceDispatchRequest {
+  string lease_token = 1;
+  string request_id = 2;
+  string tool = 3;
+  string version = 4;
+  google.protobuf.Struct arguments = 5;
+  bool confirmed = 6;
+  string idempotency_key = 7;
+}
+message VoiceDispatchResponse {
+  bool success = 1;
+  string code = 2;
+  string message = 3;
+  bool confirmation_required = 4;
+  google.protobuf.Struct result = 5;
+  bool cached = 6;
+}

@@ -1,2 +1,3 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+services/omai-control-plane/configs/models.dev.snapshot.json linguist-generated
+services/omai-control-plane/gen/** linguist-generated
+services/omai-control-plane/sdk/typescript/src/gen/** linguist-generated

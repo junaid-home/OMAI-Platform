@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+service ToolRegistryService {
+  rpc ListTools(ListToolsRequest) returns (ListToolsResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_reflected_tools"
+      description: "List tools derived from compiled Protobuf descriptors"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "tool:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.reflection"
+      version: "v1"
+    };
+  }
+}
+
+message ListToolsRequest {}
+message ReflectedTool {
+  string name = 1;
+  string version = 2;
+  string description = 3;
+  RiskLevel risk = 4;
+  ConfirmationPolicy confirmation = 5;
+  repeated string permissions = 6;
+  uint32 timeout_ms = 7;
+  bool idempotent = 8;
+  string executor = 9;
+  string grpc_method = 10;
+  bytes input_schema_json = 11;
+  repeated string required_fields = 12;
+  repeated string modalities = 13;
+  bool client_streaming = 14;
+  bool server_streaming = 15;
+}
+message ListToolsResponse {
+  repeated ReflectedTool tools = 1;
+  string registry_etag = 2;
+}

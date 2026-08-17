@@ -1,0 +1,303 @@
+syntax = "proto3";
+
+package omai.executor.v1;
+
+option go_package = "github.com/omai/backend/gen/go/omai/executor/v1;executorv1";
+
+// WorkspaceExecutorService is the private control-plane-to-sandbox boundary.
+// One leaf executor is deployed inside a sandbox that has exactly one writable
+// workspace mount. Public users never call this service directly.
+service WorkspaceExecutorService {
+  rpc ListShells(ListShellsRequest) returns (ListShellsResponse);
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+  rpc WatchFiles(WatchFilesRequest) returns (stream WorkspaceFileChange);
+  rpc CreateDirectory(CreateDirectoryRequest) returns (CreateDirectoryResponse);
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+  rpc MovePath(MovePathRequest) returns (MovePathResponse);
+  rpc DeletePath(DeletePathRequest) returns (DeletePathResponse);
+  rpc ImportArchive(ImportWorkspaceArchiveRequest) returns (ImportWorkspaceArchiveResponse);
+  rpc ExportArchive(ExportWorkspaceArchiveRequest) returns (stream WorkspaceArchiveChunk);
+  rpc SearchFiles(SearchFilesRequest) returns (SearchFilesResponse);
+  rpc SearchText(SearchTextRequest) returns (SearchTextResponse);
+  rpc StartProcess(StartProcessRequest) returns (StartProcessResponse);
+  rpc GetProcess(GetProcessRequest) returns (GetProcessResponse);
+  rpc ListProcesses(ListProcessesRequest) returns (ListProcessesResponse);
+  rpc WriteProcess(WriteProcessRequest) returns (WriteProcessResponse);
+  rpc ResizeProcess(ResizeProcessRequest) returns (ResizeProcessResponse);
+  rpc StopProcess(StopProcessRequest) returns (StopProcessResponse);
+  rpc RemoveProcess(RemoveProcessRequest) returns (RemoveProcessResponse);
+  rpc WatchProcess(WatchProcessRequest) returns (stream ProcessChunk);
+  rpc RunCommand(RunCommandRequest) returns (RunCommandResponse);
+  rpc AllocatePreviewPort(AllocatePreviewPortRequest) returns (AllocatePreviewPortResponse);
+  rpc WaitPreviewPort(WaitPreviewPortRequest) returns (WaitPreviewPortResponse);
+}
+
+message ListShellsRequest {
+  string tenant_id = 1;
+}
+message ShellInfo {
+  string path = 1;
+  string name = 2;
+  bool acceptable = 3;
+}
+message ListShellsResponse {
+  repeated ShellInfo shells = 1;
+}
+
+message FileEntry {
+  string name = 1;
+  string path = 2;
+  bool directory = 3;
+  int64 size = 4;
+  int64 modified_unix_millis = 5;
+}
+message ListFilesRequest {
+  ProcessIdentity identity = 1;
+  string path = 2;
+}
+message ListFilesResponse {
+  repeated FileEntry entries = 1;
+}
+enum FileChangeKind {
+  FILE_CHANGE_KIND_UNSPECIFIED = 0;
+  FILE_CHANGE_KIND_ADD = 1;
+  FILE_CHANGE_KIND_CHANGE = 2;
+  FILE_CHANGE_KIND_UNLINK = 3;
+  FILE_CHANGE_KIND_RESYNC = 4;
+}
+message WatchFilesRequest {
+  ProcessIdentity identity = 1;
+  repeated string paths = 2;
+}
+message WorkspaceFileChange {
+  uint64 sequence = 1;
+  string path = 2;
+  FileChangeKind kind = 3;
+}
+message CreateDirectoryRequest {
+  ProcessIdentity identity = 1;
+  string path = 2;
+}
+message CreateDirectoryResponse {}
+message ReadFileRequest {
+  ProcessIdentity identity = 1;
+  string path = 2;
+}
+message ReadFileResponse {
+  bytes data = 1;
+  string revision = 2;
+  int64 size = 3;
+  int64 modified_unix_millis = 4;
+}
+message WriteFileRequest {
+  ProcessIdentity identity = 1;
+  string path = 2;
+  bytes data = 3;
+  string expected_revision = 4;
+  bool require_revision_match = 5;
+}
+message WriteFileResponse {
+  string revision = 1;
+  int64 size = 2;
+  int64 modified_unix_millis = 3;
+}
+message MovePathRequest {
+  ProcessIdentity identity = 1;
+  string source_path = 2;
+  string destination_path = 3;
+  bool overwrite = 4;
+  string expected_revision = 5;
+  bool require_revision_match = 6;
+}
+message MovePathResponse {
+  string revision = 1;
+  int64 size = 2;
+  int64 modified_unix_millis = 3;
+}
+message DeletePathRequest {
+  ProcessIdentity identity = 1;
+  string path = 2;
+  bool recursive = 3;
+  string expected_revision = 4;
+  bool require_revision_match = 5;
+}
+message DeletePathResponse {}
+message ImportWorkspaceArchiveRequest {
+  ProcessIdentity identity = 1;
+  bytes data = 2;
+  bool strip_single_root = 3;
+}
+message ImportWorkspaceArchiveResponse {
+  int64 files = 1;
+  int64 directories = 2;
+  int64 uncompressed_bytes = 3;
+}
+message ExportWorkspaceArchiveRequest {
+  ProcessIdentity identity = 1;
+}
+message WorkspaceArchiveChunk {
+  bytes data = 1;
+}
+enum FileSearchKind {
+  FILE_SEARCH_KIND_UNSPECIFIED = 0;
+  FILE_SEARCH_KIND_FILE = 1;
+  FILE_SEARCH_KIND_DIRECTORY = 2;
+  FILE_SEARCH_KIND_ANY = 3;
+}
+message SearchFilesRequest {
+  ProcessIdentity identity = 1;
+  string query = 2;
+  int32 limit = 3;
+  FileSearchKind kind = 4;
+}
+message SearchFilesResponse {
+  repeated string paths = 1;
+}
+message SearchMatch {
+  string path = 1;
+  int32 line = 2;
+  string text = 3;
+}
+message SearchTextRequest {
+  ProcessIdentity identity = 1;
+  string query = 2;
+  int32 limit = 3;
+}
+message SearchTextResponse {
+  repeated SearchMatch matches = 1;
+}
+
+message ProcessIdentity {
+  string tenant_id = 1;
+  string workspace_id = 2;
+  // relative_root maps the control-plane workspace beneath the executor's
+  // configured mount. It is never an absolute host path.
+  string relative_root = 3;
+}
+
+message ProcessInfo {
+  string id = 1;
+  string workspace_id = 2;
+  string kind = 3;
+  string server_id = 4;
+  string title = 5;
+  string command = 6;
+  string cwd = 7;
+  string status = 8;
+  uint64 cursor = 9;
+  int32 exit_code = 10;
+  int64 started_unix_millis = 11;
+  int64 ended_unix_millis = 12;
+}
+
+message StartProcessRequest {
+  ProcessIdentity identity = 1;
+  string kind = 2;
+  string server_id = 3;
+  string title = 4;
+  string command = 5;
+  repeated string args = 6;
+  string cwd = 7;
+  map<string, string> env = 8;
+}
+
+message StartProcessResponse {
+  ProcessInfo process = 1;
+}
+
+message GetProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+}
+
+message GetProcessResponse {
+  ProcessInfo process = 1;
+}
+
+message ListProcessesRequest {
+  ProcessIdentity identity = 1;
+  string kind = 2;
+}
+
+message ListProcessesResponse {
+  repeated ProcessInfo processes = 1;
+}
+
+message WriteProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+  bytes data = 3;
+}
+
+message WriteProcessResponse {}
+
+message ResizeProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+  uint32 cols = 3;
+  uint32 rows = 4;
+}
+
+message ResizeProcessResponse {}
+
+message StopProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+}
+
+message StopProcessResponse {}
+
+message RemoveProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+}
+
+message RemoveProcessResponse {}
+
+message WatchProcessRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+  uint64 cursor = 3;
+}
+
+message ProcessChunk {
+  string process_id = 1;
+  uint64 cursor = 2;
+  bytes data = 3;
+  bool exited = 4;
+  int32 exit_code = 5;
+}
+
+message RunCommandRequest {
+  ProcessIdentity identity = 1;
+  string command = 2;
+  repeated string args = 3;
+  string cwd = 4;
+  map<string, string> env = 5;
+  int64 max_output_bytes = 6;
+}
+
+message RunCommandResponse {
+  bytes output = 1;
+  int32 exit_code = 2;
+  string workspace_root = 3;
+}
+
+message AllocatePreviewPortRequest {
+  ProcessIdentity identity = 1;
+}
+
+message AllocatePreviewPortResponse {
+  uint32 port = 1;
+}
+
+message WaitPreviewPortRequest {
+  string tenant_id = 1;
+  string process_id = 2;
+  repeated uint32 preferred_ports = 3;
+}
+
+message WaitPreviewPortResponse {
+  uint32 port = 1;
+}

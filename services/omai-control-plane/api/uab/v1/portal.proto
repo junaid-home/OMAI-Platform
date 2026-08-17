@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "google/protobuf/struct.proto";
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// PortalControlService describes browser-owned OMAI actions. The Go control
+// plane validates these calls and returns a command envelope. During a voice
+// session the gateway forwards that envelope to SolidJS and waits for an
+// explicit browser acknowledgement before reporting success to the model.
+service PortalControlService {
+  rpc Navigate(NavigateRequest) returns (NavigateResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "navigate_portal"
+      description: "Navigate to an allowed OMAI portal view"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "view"
+    };
+  }
+  rpc OpenWorkspace(OpenWorkspaceRequest) returns (OpenWorkspaceResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "open_portal_workspace"
+      description: "Open a resolved workspace in the OMAI portal"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc OpenProjectDialog(OpenProjectDialogRequest) returns (OpenProjectDialogResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "open_project_dialog"
+      description: "Open the OMAI project picker or creation dialog"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+    };
+  }
+  rpc OpenFile(OpenFileRequest) returns (OpenFileResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "open_portal_file"
+      description: "Open a workspace file in the editor at an optional position"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "workspace_id"
+      required_fields: "path"
+    };
+  }
+  rpc SetPanel(SetPanelRequest) returns (SetPanelResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "set_portal_panel"
+      description: "Show, hide, or focus an allowed OMAI portal panel"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "panel"
+      required_fields: "mode"
+    };
+  }
+  rpc ShowPreview(ShowPreviewRequest) returns (ShowPreviewResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "show_portal_preview"
+      description: "Open or refresh the workspace preview panel"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "workspace_id"
+    };
+  }
+  rpc SelectRuntime(SelectRuntimeRequest) returns (SelectRuntimeResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "select_portal_runtime"
+      description: "Select an available agent runtime in the OMAI portal"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+      required_fields: "runtime_id"
+    };
+  }
+  rpc OpenCommandPalette(OpenCommandPaletteRequest) returns (OpenCommandPaletteResponse) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "open_portal_command_palette"
+      description: "Open the OMAI command palette"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "portal:control"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "client.portal"
+      version: "v1"
+      modalities: "text"
+      modalities: "voice"
+    };
+  }
+}
+
+message NavigateRequest {
+  string view = 1;
+}
+message NavigateResponse {
+  PortalCommand command = 1;
+}
+message OpenWorkspaceRequest {
+  string workspace_id = 1;
+}
+message OpenWorkspaceResponse {
+  PortalCommand command = 1;
+}
+message OpenProjectDialogRequest {}
+message OpenProjectDialogResponse {
+  PortalCommand command = 1;
+}
+message OpenFileRequest {
+  string workspace_id = 1;
+  string path = 2;
+  uint32 line = 3;
+  uint32 column = 4;
+}
+message OpenFileResponse {
+  PortalCommand command = 1;
+}
+message SetPanelRequest {
+  string panel = 1;
+  string mode = 2;
+}
+message SetPanelResponse {
+  PortalCommand command = 1;
+}
+message ShowPreviewRequest {
+  string workspace_id = 1;
+  string path = 2;
+  bool reload = 3;
+}
+message ShowPreviewResponse {
+  PortalCommand command = 1;
+}
+message SelectRuntimeRequest {
+  string runtime_id = 1;
+}
+message SelectRuntimeResponse {
+  PortalCommand command = 1;
+}
+message OpenCommandPaletteRequest {}
+message OpenCommandPaletteResponse {
+  PortalCommand command = 1;
+}
+
+message PortalCommand {
+  string action = 1;
+  google.protobuf.Struct payload = 2;
+  uint32 timeout_ms = 3;
+}

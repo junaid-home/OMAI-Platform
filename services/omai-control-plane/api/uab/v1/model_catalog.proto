@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package uab.v1;
+
+import "google/protobuf/struct.proto";
+import "uab/v1/annotations.proto";
+
+option go_package = "github.com/omai/backend/gen/go/uab/v1;uabv1";
+
+// Struct is retained for exact compatibility with the current SolidJS model
+// picker. Every response includes schema_version; list/search responses also
+// expose total, offset and next_offset. The application core uses typed Go
+// domain records for the complete models.dev metadata and converts only at
+// this transport boundary.
+service ModelCatalogService {
+  rpc GetCatalog(google.protobuf.Struct) returns (google.protobuf.Struct) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_model_catalog"
+      description: "Read the complete configured model catalog"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "model:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.catalog"
+      version: "v1"
+    };
+  }
+  rpc ListProviders(google.protobuf.Struct) returns (google.protobuf.Struct) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_model_providers"
+      description: "List model providers for a runtime"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "model:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.catalog"
+      version: "v1"
+    };
+  }
+  rpc ListModels(google.protobuf.Struct) returns (google.protobuf.Struct) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "list_models"
+      description: "List configured models"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "model:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.catalog"
+      version: "v1"
+    };
+  }
+  rpc GetModel(google.protobuf.Struct) returns (google.protobuf.Struct) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "get_model"
+      description: "Read one configured model"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "model:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.catalog"
+      version: "v1"
+    };
+  }
+  rpc SearchModels(google.protobuf.Struct) returns (google.protobuf.Struct) {
+    option (uab.v1.tool) = {
+      enabled: true
+      public_name: "search_models"
+      description: "Search configured models"
+      risk: RISK_LEVEL_READ
+      confirmation: CONFIRMATION_POLICY_NEVER
+      permissions: "model:read"
+      timeout_ms: 5000
+      idempotent: true
+      executor: "go.catalog"
+      version: "v1"
+    };
+  }
+}

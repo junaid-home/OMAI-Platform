@@ -1,0 +1,16 @@
+{
+  "runtimes": [
+    {
+      "id": "go-adk",
+      "runtime": "go-adk",
+      "label": "OMAI Go ADK",
+      "version": "2.2.0",
+      "endpoint": "http://adk:8790",
+      "token_env": "OMAI_ADK_RUNTIME_TOKEN",
+      "transport": "connect",
+      "enabled": true,
+      "capabilities": ["chat", "streaming", "cancel", "model-routing"],
+      "models": []
+    }
+  ]
+}
