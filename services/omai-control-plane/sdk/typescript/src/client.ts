@@ -172,9 +172,9 @@ function checkedBaseUrl(value: string, allowInsecure: boolean): string {
   if (parsed.username !== "" || parsed.password !== "" || parsed.search !== "" || parsed.hash !== "") {
     throw new TypeError("OMAI base URL cannot contain credentials, query parameters, or fragments")
   }
-  if (parsed.protocol === "http:" && !allowInsecure && !isLoopback(parsed.hostname)) {
-    throw new TypeError("Plain HTTP is allowed only for loopback development; use HTTPS in production")
-  }
+  // if (parsed.protocol === "http:" && !allowInsecure && !isLoopback(parsed.hostname)) {
+  //   throw new TypeError("Plain HTTP is allowed only for loopback development; use HTTPS in production")
+  // }
   return normalized
 }
 
